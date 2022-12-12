@@ -2,17 +2,17 @@ package _2022.day11;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
-    private static Set<String> visibleTrees = new HashSet<>();
     public static void main(String[] args) throws IOException {
         new Main();
     }
 
     public Main () throws IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(new File("src/_2022/day11/inputTest.txt")));
+        BufferedReader br = new BufferedReader(new FileReader(new File("src/_2022/day11/input.txt")));
         String line;
 
         List<Monkey> monkeys = new ArrayList<>();
@@ -65,22 +65,28 @@ public class Main {
         }
 
 
+        for (int i = 0; i < 20; i++) {
 
+            for (Monkey monkey : monkeys) {
 
-        for (Monkey monkey : monkeys) {
+                if (!monkey.getCarryList().isEmpty()) {
 
-            if (!monkey.getCarryList().isEmpty()) {
+                    List<Integer> objects = monkey.getCarryList().stream().collect(Collectors.toList());
+                    for (Integer item : objects) {
 
-                for (Integer item : monkey.getCarryList()) {
+                        item = monkey.inspect();
+                        int nextMonkey = monkey.getNextMonkey(item);
 
-                    item = monkey.inspect();
-                    int nextMonkey = monkey.getNextMonkey(item);
+                        monkeys.get(nextMonkey).getCarryList().add(item);
 
-                    monkeys.get(nextMonkey).getCarryList().add(item);
-
+                    }
                 }
             }
         }
+
+
+
+        monkeys.stream().forEach(i -> System.out.println("Monkey inspection Count: " + i.getInspectionCount()));
 
         System.out.println("Total Monkeys: " + monkeys.size());
 
