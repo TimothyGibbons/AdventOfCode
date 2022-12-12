@@ -1,114 +1,135 @@
 package _2022.day11;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainPart2 {
 
-    private static Set<String> visibleTrees = new HashSet<>();
     public static void main(String[] args) throws IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(new File("src/_2022/day8/input.txt")));
+        new MainPart2();
+    }
+
+    public MainPart2 () throws IOException {
+
+        BufferedReader br = new BufferedReader(new FileReader(new File("src/_2022/day11/inputTest.txt")));
         String line;
 
-
-        List<String> lines = new ArrayList<>();
-
+        List<Monkey> monkeys = new ArrayList<>();
+        Monkey currentMonkey = null;
         while ((line = br.readLine()) != null) {
-            lines.add(line);
+
+            if (line.startsWith("Monkey") && currentMonkey == null) {
+                currentMonkey = new Monkey();
+                monkeys.add(currentMonkey);
+            }
+
+            if (line.isEmpty()) {
+                currentMonkey = null;
+            }
+
+            if (line.startsWith("  Starting items:")) {
+                String[] items = line.substring(18).split(", ");
+
+                Queue<Integer> queue = new LinkedList<>();
+                Arrays.stream(items).map(Integer::parseInt).forEach(i -> queue.add(i));
+                currentMonkey.setCarryList(queue);
+            }
+
+            if (line.startsWith("  Operation:")) {
+                String[] items = line.substring(23).split(" ");
+
+                currentMonkey.setOperation(Operation.fromString(items[0]).get());
+
+                int operationValue = -1;
+                if (!items[1].equals("old"))
+                    operationValue = Integer.parseInt(items[1]);
+
+                currentMonkey.setOperationValue(operationValue);
+            }
+
+            if (line.startsWith("  Test:")) {
+                String divisor = line.substring(21);
+                currentMonkey.setWorryDivisor(Integer.parseInt(divisor));
+            }
+
+            if (line.startsWith("    If true:")) {
+                String monkey = line.substring(29);
+                currentMonkey.setTrueMonkey(Integer.parseInt(monkey));
+            }
+
+            if (line.startsWith("    If false:")) {
+                String monkey = line.substring(30);
+                currentMonkey.setFalseMonkey(Integer.parseInt(monkey));
+            }
         }
 
-        int[][] grid = buildGrid(lines);
 
+        for (int j = 0; j < 20; j++) {
 
-        int maxView = 0;
+            for (Monkey monkey : monkeys) {
 
-        for (int i = 0; i < grid.length-1; i++) {
-            for (int j = 0; j < grid[i].length-1; j++) {
+                if (!monkey.getCarryList().isEmpty()) {
 
-                int currentView = getView(grid, i, j);
+                    List<Integer> objects = monkey.getCarryList().stream().collect(Collectors.toList());
+                    for (Integer item : objects) {
 
-                if(currentView > maxView) {
-                    maxView = currentView;
+                        item = monkey.inspect2();//worryLevel
+                        int nextMonkey = monkey.getNextMonkey(item);
+
+                        monkeys.get(nextMonkey).getCarryList().add(item);
+
+                    }
                 }
             }
+
+//            if(monkeys.get(0).getInspectionCount() == 99
+//                    && monkeys.get(1).getInspectionCount() == 97
+//                    && monkeys.get(2).getInspectionCount() == 8
+//                    && monkeys.get(3).getInspectionCount() == 103) {
+//
+////                System.out.println("i = " + worryLevel);
+//                break;
+//            }
+
         }
 
-        System.out.println(maxView);
-        System.out.println("-------------------------------------");
+
+
+
+
+
+        monkeys.stream().forEach(i -> System.out.println("Monkey inspection Count: " + i.getInspectionCount()));
+
+
+//        List<Long> inspections = monkeys.stream()
+//                .map(Monkey::getInspectionCount)
+//                .sorted(Comparator.reverseOrder())
+//                .collect(Collectors.toList());
+//
+//        long monkeyBusiness = inspections.get(0) * inspections.get(1);
+//
+//
+//        System.out.println("Monkey business: " + monkeyBusiness);
+
     }
 
-    private static int[][] buildGrid(List<String> inputLines) {
-        int[][] grid = new int[inputLines.get(0).length()][inputLines.size()];
-
-        for (int i = 0; i < inputLines.size(); i++) {
-            String[] row = inputLines.get(i).split("");
-
-            for (int j = 0; j < row.length; j++) {
-
-                grid[i][j] = Integer.parseInt(row[j]);
-
-            }
-            System.out.println();
-        }
-
-        return grid;
-    }
-
-    private static int getView(int[][] grid, int i, int j) {
-        int currentTreeHeight = grid[i][j];
-        int[] view = {0,0,0,0};
-
-        //up
-        int pos = i-1;
-        while(pos >= 0) {
-            view[0]++;
-            if(grid[pos][j] >= currentTreeHeight) {
-                break;
-            }
-            pos--;
-        }
-
-        // left
-        pos = j-1;
-        while(pos >= 0) {
-            view[1]++;
-            if(grid[i][pos] >= currentTreeHeight) {
-                break;
-            }
-            pos--;
-        }
-
-        // down
-        pos = i+1;
-        while(pos < grid.length) {
-            view[2]++;
-            if(grid[pos][j] >= currentTreeHeight) {
-                break;
-            }
-            pos++;
-        }
-
-        //right
-        pos = j+1;
-        while(pos < grid.length) {
-            view[3]++;
-            if(grid[i][pos] >= currentTreeHeight) {
-                break;
-            }
-            pos++;
-        }
-
-
-        return (view[0]
-                * view[1]
-                * view[2]
-                * view[3] );
-    }
+//    private void playRound(List<Monkey> monkeys) {
+//        for (Monkey monkey : monkeys) {
+//
+//            if (!monkey.getCarryList().isEmpty()) {
+//
+//                List<Integer> objects = monkey.getCarryList().stream().collect(Collectors.toList());
+//                for (Integer item : objects) {
+//
+//                    item = monkey.inspect();
+//                    int nextMonkey = monkey.getNextMonkey(item);
+//
+//                    monkeys.get(nextMonkey).getCarryList().add(item);
+//
+//                }
+//            }
+//        }
+//    }
 }
