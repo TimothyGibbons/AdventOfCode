@@ -3,13 +3,15 @@ package _2022.day11;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class Monkey {
+public class Monkey implements Cloneable {
     private Queue<Integer> carryList;
     private Operation operation;
     private int operationValue;
     private int worryDivisor;
     private int trueMonkey;
     private int falseMonkey;
+
+    private Long inspectionCount = 0L;
 
     public Monkey() {
         this.carryList = new LinkedList<>();
@@ -27,19 +29,65 @@ public class Monkey {
 
 
     public int inspect() {
+        inspectionCount++;
         int oldValue = carryList.poll();
+
+        double worryLevel = 3.0;
 
         switch(operation) {
             case PLUS :
-                return (int)((oldValue + operationValue) / 3.0);
+                return (int)((oldValue + operationValue) / worryLevel);
             case MINUS :
-                return (int)((oldValue - operationValue) / 3.0);
+                return (int)((oldValue - operationValue) / worryLevel);
             case MULTIPLY :
                 if(operationValue == -1)
-                    return (int)((oldValue * oldValue) / 3.0);
-                return (int)((oldValue * operationValue) / 3.0);
+                    return (int)((oldValue * oldValue) / worryLevel);
+                return (int)((oldValue * operationValue) / worryLevel);
             case DIVIDE :
-                return (int)((oldValue / operationValue) / 3.0);
+                return (int)((oldValue / operationValue) / worryLevel);
+        }
+
+        return 0;
+    }
+
+    public int inspect2() {
+        inspectionCount++;
+        int oldValue = carryList.poll();
+
+        double worryLevel = 3.0;
+
+        switch(operation) {
+            case PLUS :
+                return (int)((oldValue + operationValue));
+            case MINUS :
+                return (int)((oldValue - operationValue));
+            case MULTIPLY :
+                if(operationValue == -1)
+                    return (int)((oldValue * oldValue));
+                return (int)((oldValue * operationValue));
+            case DIVIDE :
+                return (int)((oldValue / operationValue));
+        }
+
+        return 0;
+    }
+    public int inspect(double worryLevel) {
+        inspectionCount++;
+        int oldValue = carryList.poll();
+
+//        double worryLevel = 3.0;
+
+        switch(operation) {
+            case PLUS :
+                return (int)((oldValue + operationValue) * worryLevel);
+            case MINUS :
+                return (int)((oldValue - operationValue) * worryLevel);
+            case MULTIPLY :
+                if(operationValue == -1)
+                    return (int)((oldValue * oldValue) * worryLevel);
+                return (int)((oldValue * operationValue) * worryLevel);
+            case DIVIDE :
+                return (int)((oldValue / operationValue) * worryLevel);
         }
 
         return 0;
@@ -100,5 +148,13 @@ public class Monkey {
 
     public void setFalseMonkey(int falseMonkey) {
         this.falseMonkey = falseMonkey;
+    }
+
+    public Long getInspectionCount() {
+        return inspectionCount;
+    }
+
+    public void setInspectionCount(Long inspectionCount) {
+        this.inspectionCount = inspectionCount;
     }
 }
